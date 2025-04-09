@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pembagian Kelompok Siswa</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- SweetAlert CSS -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Custom CSS -->
+  <!-- <link rel="stylesheet" href="style.css"> -->
+   <style>
+        .modal-body {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.group-box-modal {
+  background-color: #e9ecef;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.group-title-modal {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+   </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <h1 class="text-center mb-4">Apps Pembagian Kelompok Siswa</h1>
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card shadow">
+          <div class="card-body">
+            <h5 class="card-title text-center">Masukkan Nama Siswa, pisahkan dengan koma (,)</h5>
+            <textarea id="studentNames" class="form-control mb-3" rows="5" placeholder="Contoh : Oktafia Norfadila,Syavira Riski Fagilah" required></textarea>
+            <div class="input-group mb-3">
+              <span class="input-group-text">Jumlah Kelompok</span>
+              <input type="number" id="groupCount" class="form-control" min="1" placeholder="Contoh : 4" required>
+            </div>
+            <button id="divideButton" class="btn btn-primary w-100">Bagi Kelompok</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Hasil Pembagian Kelompok -->
+  <div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Hasil Pembagian Kelompok</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="groupsContainerModal" class="row justify-content-center"></div>
+        </div>
+        <div class="modal-footer">
+          <button id="printButton" class="btn btn-success">Cetak sebagai Gambar</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- html2canvas JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Custom JS -->
+  <!-- <script src="script.js"></script> -->
+   <script>
+        document.getElementById('divideButton').addEventListener('click', function () {
+  const studentNamesInput = document.getElementById('studentNames').value.trim();
+  const groupCountInput = document.getElementById('groupCount').value.trim();
+
+  // Validasi input
+  if (!studentNamesInput || !groupCountInput) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Silakan masukkan nama siswa dan jumlah kelompok!',
+    });
+    return;
+  }
+
+  const students = studentNamesInput.split(',').map(name => name.trim()).filter(name => name !== '');
+  const groupCount = parseInt(groupCountInput);
+
+  if (students.length === 0) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Nama siswa tidak valid!',
+    });
+    return;
+  }
+
+  if (groupCount <= 0) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Jumlah kelompok harus lebih dari 0!',
+    });
+    return;
+  }
+
+  // Bagi siswa ke dalam kelompok
+  const groups = divideStudentsIntoGroups(students, groupCount);
+
+  // Tampilkan hasil di modal
+  displayGroupsInModal(groups);
+
+  // Notifikasi sukses
+  Swal.fire({
+    icon: 'success',
+    title: 'Berhasil!',
+    text: 'Pembagian kelompok telah selesai.',
+  });
+
+  // Tampilkan modal
+  const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
+  resultModal.show();
+});
+
+function divideStudentsIntoGroups(students, groupCount) {
+  const shuffled = students.sort(() => 0.5 - Math.random());
+  const groups = Array.from({ length: groupCount }, () => []);
+
+  shuffled.forEach((student, index) => {
+    groups[index % groupCount].push(student);
+  });
+
+  return groups;
+}
+
+function displayGroupsInModal(groups) {
+  const groupsContainerModal = document.getElementById('groupsContainerModal');
+
+  // Bersihkan kontainer sebelumnya
+  groupsContainerModal.innerHTML = '';
+
+  // Tampilkan setiap kelompok
+  groups.forEach((group, index) => {
+    const groupBox = document.createElement('div');
+    groupBox.className = 'col-md-6 group-box-modal';
+
+    const groupTitle = document.createElement('div');
+    groupTitle.className = 'group-title-modal';
+    groupTitle.textContent = `Kelompok ${index + 1}`;
+
+    const groupList = document.createElement('ul');
+    groupList.className = 'list-unstyled';
+
+    group.forEach(student => {
+      const listItem = document.createElement('li');
+      listItem.textContent = `- ${student}`;
+      groupList.appendChild(listItem);
+    });
+
+    groupBox.appendChild(groupTitle);
+    groupBox.appendChild(groupList);
+    groupsContainerModal.appendChild(groupBox);
+  });
+}
+
+// Fungsi untuk mencetak hasil sebagai gambar
+document.getElementById('printButton').addEventListener('click', function () {
+  const groupsContainerModal = document.getElementById('groupsContainerModal');
+  scale: 10;
+
+  html2canvas(groupsContainerModal).then(canvas => {
+    const link = document.createElement('a');
+    link.href = canvas.toDataURL('image/png');
+    link.download = 'pembagian_kelompok.png';
+    link.click();
+  });
+});
+   </script>
+</body>
+</html>
