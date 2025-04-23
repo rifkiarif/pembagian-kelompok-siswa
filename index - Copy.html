@@ -178,21 +178,6 @@ function displayGroupsInModal(groups) {
     groupsContainerModal.appendChild(groupBox);
   });
 }
-
-// Fungsi untuk mencetak hasil sebagai gambar
-document.getElementById('printButton').addEventListener('click', function () {
-  // Ambil elemen modal body yang berisi hasil pembagian kelompok
-  const groupsContainerModal = document.getElementById('groupsContainerModal');
-
-  // Gunakan html2canvas untuk mengambil tangkapan layar
-  html2canvas(groupsContainerModal).then(canvas => {
-    // Buat elemen <a> untuk mengunduh gambar
-    const link = document.createElement('a');
-    link.href = canvas.toDataURL('image/png'); // Konversi canvas ke URL gambar
-    link.download = 'hasil_pembagian_kelompok.png'; // Nama file untuk diunduh
-    link.click(); // Klik otomatis untuk mengunduh gambar
-  });
-});
   </script>
   
 </body>
